@@ -12,9 +12,13 @@ public interface NeuralNetInterface extends CommonInterface{
  * @param argMomentumTerm The momentum coefficient
  * @param argA Integer lower bound of sigmoid used by the output neuron only.
  * @param arbB Integer upper bound of sigmoid used by the output neuron only.
-public abstract NeuralNet ( int argNumInputs, int argNumHidden,
-double argLearningRate, double argMomentumTerm, double argA,
-double argB );
+    public abstract NeuralNet (
+                int argNumInputs,
+                int argNumHidden,
+                double argLearningRate,
+                double argMomentumTerm,
+                double argA,
+                double argB );
  */
     /**
      * Return a bipolar sigmoid of the input X * @param x The input

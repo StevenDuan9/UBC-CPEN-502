@@ -1,2 +1,56 @@
-package Sarb;public class NeuralNet {
+package Sarb;
+
+import java.io.File;
+import java.io.IOException;
+
+public class NeuralNet implements NeuralNetInterface{
+    boolean binary = false;
+    private int inputNumber = 0;
+    private int hiddenNode = 0;
+    private double output = 0;
+    private double [] input;
+
+    NeuralNet(boolean binary){
+        this.binary = binary;
+    }
+    @Override
+    public double outputFor(double[] X) {
+
+        return 0;
+    }
+
+    @Override
+    public double train(double[] X, double argValue) {
+        return 0;
+    }
+
+    @Override
+    public void save(File argFile) {
+
+    }
+
+    @Override
+    public void load(String argFileName) throws IOException {
+
+    }
+
+    @Override
+    public double sigmoid(double x) {
+        return 0;
+    }
+
+    @Override
+    public double customSigmoid(double x) {
+        return 0;
+    }
+
+    @Override
+    public void initializeWeights() {
+
+    }
+
+    @Override
+    public void zeroWeights() {
+
+    }
 }
