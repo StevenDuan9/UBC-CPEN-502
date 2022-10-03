@@ -25,6 +25,7 @@ public interface NeuralNetInterface extends CommonInterface{
      * @return f(x) = 2 / (1+e(-x)) - 1
      */
     public double sigmoid(double x);
+
     /**
      * This method implements a general sigmoid * @param x The input
      * @return f(x) = b_minus_a / (1 + e(-x)) - */
