@@ -21,10 +21,10 @@ public class NeuralNet implements NeuralNetInterface {
     private double[][] hiddenWeightDelta;
     private double[] outputErrorSignal;
     private double[] hiddenErrorSignal;
-    private double learningRate = 0.2;
-    private double momentum = 0.0;
-    private double acceptedError = 0.05;
-    private double totalError = 0.0;
+    private double learningRate = 0.2D;
+    private double momentum = 0.0D;
+    private double acceptedError = 0.05D;
+    private double totalError = 0.0D;
     private double[] singleError;
     private int epoch = 0;
 
@@ -52,7 +52,7 @@ public class NeuralNet implements NeuralNetInterface {
     }
 
     public void initializeSet() {
-        if (this.binary = true) {
+        if (this.binary == true) {
             this.trainInput = new double[][]{{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
             this.trainOutput = new double[][]{{0.0}, {1.0}, {1.0}, {0.0}};
         } else {
@@ -72,6 +72,22 @@ public class NeuralNet implements NeuralNetInterface {
                 hiddenWeight[i][j] = Math.random() - 0.5D;
             }
         }
+    }
+    public void initializeWeights1() {
+        int i;
+        int j;
+        for(i = 0; i < this.inputNumber+ 1; ++i) {
+            for(j = 0; j < this.hiddenNumber; ++j) {
+                this.inputWeight[i][j] = 0.2D;
+            }
+        }
+
+        for(i = 0; i < this.hiddenNumber + 1; ++i) {
+            for(j = 0; j < this.outputNumber; ++j) {
+                this.hiddenWeight[i][j] = 0.2D;
+            }
+        }
+
     }
 
 
@@ -93,8 +109,8 @@ public class NeuralNet implements NeuralNetInterface {
         }
         hiddenNode[hiddenNumber] = 1.0;
         for (int i = 0; i < outputNumber; i++) {
-            for (int j = 0; j < hiddenNumber; j++) {
-                outputNode[i] = hiddenNode[j] * hiddenWeight[j][i];
+            for (int j = 0; j < hiddenNumber + 1; j++) {
+                outputNode[i] += hiddenNode[j] * hiddenWeight[j][i];
             }
             outputNode[i] = binary ? sigmoid(outputNode[i]) : customSigmoid(outputNode[i]);
         }
@@ -103,7 +119,8 @@ public class NeuralNet implements NeuralNetInterface {
     public void getTotalError(int trainInputOrder) {
         for (int i = 0; i < outputNumber; i++) {
             singleError[i] = trainOutput[trainInputOrder][i] - outputNode[i];
-            totalError += singleError[i] * singleError[i] / 2.0D;
+            //totalError += singleError[i] * singleError[i] ;
+            this.totalError += Math.pow(this.singleError[i], 2.0D);
         }
     }
 
@@ -111,18 +128,18 @@ public class NeuralNet implements NeuralNetInterface {
         //compute the error for the output units
         for (int i = 0; i < outputNumber; i++) {
             //outputErrorSignal[i] = 0;
-            outputErrorSignal[i] = binary ? outputNode[i] * (1.0D - outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]) : 0.5D * (1.0D - outputNode[i] * outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]);
+            outputErrorSignal[i] = binary ? outputNode[i] * (1.0D - outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]) : 0.5D * (1.0D - Math.pow(outputNode[i], 2.0D)) * (trainOutput[setRowOrder][i] - outputNode[i]);
         }
         //update the weight of the hidden units
         for (int i = 0; i < outputNumber; i++) {
-            for (int j = 0; j < hiddenNumber; j++) {
+            for (int j = 0; j < hiddenNumber + 1; j++) {
                 hiddenWeightDelta[j][i] = momentum * hiddenWeightDelta[j][i] + learningRate * outputErrorSignal[i] * hiddenNode[j];
                 hiddenWeight[j][i] += hiddenWeightDelta[j][i];
             }
         }
         //compute the error for the hidden units
         for (int i = 0; i < hiddenNumber; i++) {
-            //hiddenErrorSignal[i] = 0;
+            hiddenErrorSignal[i] = 0;
             for (int j = 0; j < outputNumber; j++) {
                 hiddenErrorSignal[i] += outputErrorSignal[j] * hiddenWeight[i][j];
             }
@@ -130,17 +147,17 @@ public class NeuralNet implements NeuralNetInterface {
         }
         //update the weight of the input units
         for (int i = 0; i < hiddenNumber; i++) {
-            for (int j = 0; j < inputNumber; j++) {
+            for (int j = 0; j < inputNumber+1; j++) {
                 inputWeightDelta[j][i] = momentum * inputWeightDelta[j][i] + learningRate * hiddenErrorSignal[i] * inputNode[j];
                 inputWeight[j][i] += inputWeightDelta[j][i];
             }
         }
-
+        System.out.println("");
     }
 
     public void train() {
         epoch = 0;
-        /*do{
+        do{
             totalError = 0.0;
             for(int i = 0; i < trainInput.length; i++){
                 forwardPropagation(i);
@@ -150,17 +167,8 @@ public class NeuralNet implements NeuralNetInterface {
             }
             System.out.println("epoch:" + epoch + "total error+" + totalError);
             epoch++;
-        }while(totalError > acceptedError);*/
-        for (int j = 0; j < 10000; j++) {
-            totalError = 0.0;
-            for (int i = 0; i < trainInput.length; i++) {
-                forwardPropagation(i);
-                getTotalError(i);
-                backPropagation(i);
-            }
-            epoch++;
-            System.out.println("epoch:" + epoch + "total error+" + totalError);
-        }
+        }while(totalError > acceptedError);
+
     }
 
 
