@@ -1,14 +1,12 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 package Sarb;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class NeuralNet implements NeuralNetInterface {
+
     private boolean binary = false;
     private int inputNumber = 2;
     private int hiddenNumber = 4;
@@ -30,6 +28,9 @@ public class NeuralNet implements NeuralNetInterface {
     private double totalError = 0.0D;
     private double[] singleError;
     private int epoch = 0;
+    private ArrayList<String> ls1;
+    private ArrayList<String> ls2;
+    private boolean runOnlyOnce = false;
 
     public NeuralNet(boolean binary, int inputNumber, int outputNumber, int hiddenNumber, double learningRate, double momentum, double acceptedError) {
         this.binary = binary;
@@ -39,52 +40,57 @@ public class NeuralNet implements NeuralNetInterface {
         this.inputNode = new double[inputNumber + 1];
         this.hiddenNode = new double[hiddenNumber + 1];
         this.outputNode = new double[outputNumber];
-        this.inputWeight = new double[inputNumber + 1][hiddenNumber + 1];
+        this.inputWeight = new double[inputNumber + 1][hiddenNumber+1];
         this.hiddenWeight = new double[hiddenNumber + 1][outputNumber];
-        this.inputWeightDelta = new double[inputNumber + 1][hiddenNumber + 1];
+        this.inputWeightDelta = new double[inputNumber + 1][hiddenNumber+1];
         this.hiddenWeightDelta = new double[hiddenNumber + 1][outputNumber];
         this.outputErrorSignal = new double[outputNumber];
-        this.hiddenErrorSignal = new double[hiddenNumber + 1];
+        this.hiddenErrorSignal = new double[hiddenNumber+1];
         this.learningRate = learningRate;
         this.momentum = momentum;
         this.acceptedError = acceptedError;
-        this.totalError = 0.0D;
+        this.totalError = 0.0;
         this.singleError = new double[outputNumber];
         this.epoch = 0;
+        ls1 = new ArrayList<>();
+        ls2 = new ArrayList<>();
+        ls1.add("Epoch");
+        if(binary){
+            ls2.add("Error Vs Epoch (Binary Representation)");
+        }else{
+            ls2.add("Error Vs Epoch (Bipolar Representation)");
+        }
+
+
     }
 
     public void initializeSet() {
-        if (this.binary) {
-            this.trainInput = new double[][]{{0.0D, 0.0D}, {0.0D, 1.0D}, {1.0D, 0.0D}, {1.0D, 1.0D}};
-            this.trainOutput = new double[][]{{0.0D}, {1.0D}, {1.0D}, {0.0D}};
+        if (this.binary == true) {
+            this.trainInput = new double[][]{{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
+            this.trainOutput = new double[][]{{0.0}, {1.0}, {1.0}, {0.0}};
         } else {
-            this.trainInput = new double[][]{{-1.0D, -1.0D}, {-1.0D, 1.0D}, {1.0D, -1.0D}, {1.0D, 1.0D}};
-            this.trainOutput = new double[][]{{-1.0D}, {1.0D}, {1.0D}, {-1.0D}};
+            this.trainInput = new double[][]{{-1.0, -1.0}, {-1.0, 1.0}, {1.0, -1.0}, {1.0, 1.0}};
+            this.trainOutput = new double[][]{{-1.0}, {1.0}, {1.0}, {-1.0}};
         }
-
     }
 
     public void initializeWeights() {
-        int i;
-        int j;
-        for(i = 0; i < this.inputNumber + 1; ++i) {
-            for(j = 0; j < this.hiddenNumber; ++j) {
-                this.inputWeight[i][j] = Math.random() - 0.5D;
+        for (int i = 0; i < inputNumber + 1; i++) {
+            for (int j = 0; j < hiddenNumber; j++) {
+                //System.out.println(Math.random());
+                inputWeight[i][j] = Math.random() - 0.5D;
             }
         }
-
-        for(i = 0; i < this.hiddenNumber + 1; ++i) {
-            for(j = 0; j < this.outputNumber; ++j) {
-                this.hiddenWeight[i][j] = Math.random() - 0.5D;
+        for (int i = 0; i < hiddenNumber + 1; i++) {
+            for (int j = 0; j < outputNumber; j++) {
+                hiddenWeight[i][j] = Math.random() - 0.5D;
             }
         }
-
     }
-
     public void initializeWeights1() {
         int i;
         int j;
-        for(i = 0; i < this.inputNumber + 1; ++i) {
+        for(i = 0; i < this.inputNumber+ 1; ++i) {
             for(j = 0; j < this.hiddenNumber; ++j) {
                 this.inputWeight[i][j] = 0.2D;
             }
@@ -98,128 +104,192 @@ public class NeuralNet implements NeuralNetInterface {
 
     }
 
+
     public void initialize() {
-        this.initializeSet();
-        this.initializeWeights();
-        this.inputNode[this.inputNumber] = 1.0D;
-        this.hiddenNode[this.hiddenNumber] = 1.0D;
+        initializeSet();
+        initializeWeights();
+        inputNode[inputNumber] = 1.0;
+        hiddenNode[hiddenNumber] = 1.0;
     }
 
     public void forwardPropagation(int setRowOrder) {
-        int i;
-        for(i = 0; i < this.trainInput[setRowOrder].length; ++i) {
-            this.inputNode[i] = this.trainInput[setRowOrder][i];
+        for (int i = 0; i < trainInput[setRowOrder].length; i++) {
+            inputNode[i] = trainInput[setRowOrder][i];
         }
-
-        double[] var10000;
-        int j;
-        for(i = 0; i < this.hiddenNumber + 1; ++i) {
-            for(j = 0; j < this.inputNumber + 1; ++j) {
-                var10000 = this.hiddenNode;
-                var10000[i] += this.inputNode[j] * this.inputWeight[j][i];
+        //inputNode[inputNumber] = 1.0;
+//        for(int i = 0; i < trainInput[setRowOrder].length+1; i++){
+//            System.out.println(inputNode[i]);
+//        }
+        for (int i = 0; i < hiddenNumber + 1; i++) {
+            for (int j = 0; j < inputNumber + 1; j++) {
+                hiddenNode[i] += inputNode[j] * inputWeight[j][i];
             }
-
-            this.hiddenNode[i] = this.binary ? this.sigmoid(this.hiddenNode[i]) : this.customSigmoid(this.hiddenNode[i]);
+            hiddenNode[i] = binary ? sigmoid(hiddenNode[i]) : customSigmoid(hiddenNode[i]);
         }
+        //hiddenNode[hiddenNumber] = 1.0;
+        for (int i = 0; i < outputNumber; i++) {
+            for (int j = 0; j < hiddenNumber + 1; j++) {
 
-        for(i = 0; i < this.outputNumber; ++i) {
-            for(j = 0; j < this.hiddenNumber + 1; ++j) {
-                var10000 = this.outputNode;
-                var10000[i] += this.hiddenNode[j] * this.hiddenWeight[j][i];
+                outputNode[i] += hiddenNode[j] * hiddenWeight[j][i];
+
             }
-
-            this.outputNode[i] = this.binary ? this.sigmoid(this.outputNode[i]) : this.customSigmoid(this.outputNode[i]);
+            outputNode[i] = binary ? sigmoid(outputNode[i]) : customSigmoid(outputNode[i]);
         }
-
     }
 
     public void getTotalError(int trainInputOrder) {
-        for(int i = 0; i < this.outputNumber; ++i) {
-            this.singleError[i] = this.trainOutput[trainInputOrder][i] - this.outputNode[i];
+        for (int i = 0; i < outputNumber; i++) {
+            singleError[i] = trainOutput[trainInputOrder][i] - outputNode[i];
+            //totalError += singleError[i] * singleError[i] ;
             this.totalError += Math.pow(this.singleError[i], 2.0D);
         }
-
     }
 
     public void backPropagation(int setRowOrder) {
-        int i;
-        for(i = 0; i < this.outputNumber; ++i) {
-            this.outputErrorSignal[i] = this.binary ? this.outputNode[i] * (1.0D - this.outputNode[i]) * (this.trainOutput[setRowOrder][i] - this.outputNode[i]) : 0.5D * (1.0D - Math.pow(this.outputNode[i], 2.0D)) * (this.trainOutput[setRowOrder][i] - this.outputNode[i]);
+        //compute the error for the output units
+        for (int i = 0; i < outputNumber; i++) {
+            //outputErrorSignal[i] = 0;
+            outputErrorSignal[i] = binary ? outputNode[i] * (1.0D - outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]) : 0.5D * (1.0D - Math.pow(outputNode[i], 2.0D)) * (trainOutput[setRowOrder][i] - outputNode[i]);
         }
+        //update the weight of the hidden units
+        for (int i = 0; i < outputNumber; i++) {
 
-        double[] var10000;
-        int j;
-        for(i = 0; i < this.outputNumber; ++i) {
-            for(j = 0; j < this.hiddenNumber + 1; ++j) {
-                this.hiddenWeightDelta[j][i] = this.momentum * this.hiddenWeightDelta[j][i] + this.learningRate * this.outputErrorSignal[i] * this.hiddenNode[j];
-                var10000 = this.hiddenWeight[j];
-                var10000[i] += this.hiddenWeightDelta[j][i];
+            for (int j = 0; j < hiddenNumber + 1; j++) {
+                hiddenWeightDelta[j][i] = momentum * hiddenWeightDelta[j][i] + learningRate * outputErrorSignal[i] * hiddenNode[j];
+                hiddenWeight[j][i] += hiddenWeightDelta[j][i];
             }
         }
+        //compute the error for the hidden units
 
-        for(i = 0; i < this.hiddenNumber + 1; ++i) {
-            this.hiddenErrorSignal[i] = 0.0D;
+        for (int i = 0; i < hiddenNumber +1 ; i++) {
+            hiddenErrorSignal[i] = 0;
 
-            for(j = 0; j < this.outputNumber; ++j) {
-                var10000 = this.hiddenErrorSignal;
-                var10000[i] += this.outputErrorSignal[j] * this.hiddenWeight[i][j];
+            for (int j = 0; j < outputNumber; j++) {
+                hiddenErrorSignal[i] += outputErrorSignal[j] * hiddenWeight[i][j];
             }
-
-            var10000 = this.hiddenErrorSignal;
-            var10000[i] *= this.binary ? this.hiddenNode[i] * (1.0D - this.hiddenNode[i]) : 0.5D * (1.0D - this.hiddenNode[i] * this.hiddenNode[i]);
+            hiddenErrorSignal[i] *= binary ? hiddenNode[i] * (1.0D - hiddenNode[i]) : 0.5D * (1.0D - hiddenNode[i] * hiddenNode[i]);
         }
+        //update the weight of the input units
 
-        for(i = 0; i < this.hiddenNumber; ++i) {
-            for(j = 0; j < this.inputNumber + 1; ++j) {
-                this.inputWeightDelta[j][i] = this.momentum * this.inputWeightDelta[j][i] + this.learningRate * this.hiddenErrorSignal[i] * this.inputNode[j];
-                var10000 = this.inputWeight[j];
-                var10000[i] += this.inputWeightDelta[j][i];
+        for (int i = 0; i < hiddenNumber; i++) {
+
+            for (int j = 0; j < inputNumber+1; j++) {
+                inputWeightDelta[j][i] = momentum * inputWeightDelta[j][i] + learningRate * hiddenErrorSignal[i] * inputNode[j];
+                inputWeight[j][i] += inputWeightDelta[j][i];
+                //System.out.println(inputWeight[j][i]);
             }
         }
 
     }
 
+
+    //    public int trainAverage() {
+//        epoch = 0;
+//         do{
+//
+//            totalError = 0.0;
+//            for(int i = 0; i < trainInput.length; i++){
+//                forwardPropagation(i);
+//                getTotalError(i);
+//                //System.out.println(totalError);
+//                backPropagation(i);
+//            }
+//            //System.out.println("epoch:" + epoch + " " + "total error+" + totalError);
+//            epoch++;
+//
+//        }while(totalError > acceptedError);
+//         return epoch;
+//    }
     public void train() {
         this.epoch = 0;
+        do{
 
-        do {
-            this.totalError = 0.0D;
-
-            for(int i = 0; i < this.trainInput.length; ++i) {
-                this.forwardPropagation(i);
-                this.getTotalError(i);
-                this.backPropagation(i);
+            totalError = 0.0;
+            for(int i = 0; i < trainInput.length; i++){
+                forwardPropagation(i);
+                getTotalError(i);
+                //System.out.println(totalError);
+                backPropagation(i);
             }
+            //System.out.println("epoch:" + this.epoch + " " + "total error " + totalError);
+            if(!runOnlyOnce){
+                ls1.add(Integer.toString(this.epoch));
+                ls2.add(Double.toString(this.totalError));
+            }
+            this.epoch++;
 
-            System.out.println("epoch:" + this.epoch + " total error+" + this.totalError);
-            ++this.epoch;
-        } while(this.totalError > this.acceptedError);
-
+        }while(totalError > acceptedError);
     }
 
+    /*public void saveTotalErrorForEpochToFile(){
+        FileWriter filewriter = new FileWriter("D:/CPEN-502/")
+    }*/
     public double train(double[] X, double argValue) {
-        return 0.0D;
+        return 0;
     }
 
+
+    @Override
     public double sigmoid(double x) {
         return 1.0D / (1.0D + Math.exp(-x));
     }
 
+    @Override
     public double customSigmoid(double x) {
         return 2.0D / (1.0D + Math.exp(-x)) - 1.0D;
     }
 
+    @Override
     public void save(File argFile) {
     }
 
+    @Override
     public void load(String argFileName) throws IOException {
+
     }
 
+    @Override
     public double outputFor(double[] X) {
-        return 0.0D;
+        return 0;
     }
 
-    public void zeroWeights() {
-        double weights = 0.0D;
+    @Override
+    public void zeroWeights () {
+        double weights = 0.0;
     }
+
+    public void writeToCSV() throws Exception {
+
+        try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("data.csv"), StandardCharsets.ISO_8859_1))){
+            for(int i=0; i < this.ls1.size(); i++) {
+                writer.write(this.ls1.get(i));
+                writer.write("," + ls2.get(i) + System.lineSeparator());
+            }
+        }
+    }
+
+    public void calculateAverage(int time){
+        int sum = 0;
+        for(int i = 0; i < time; i++){
+            initialize();
+            train();
+            sum += this.epoch;
+            runOnlyOnce = true;
+        }
+        System.out.println("Average Epoch to converge when total error is less than 0.05: " + sum/time);
+    }
+
+
+//    public void getAverage( int times){
+//        int epo = 0;
+//        initializeSet();
+//        for(int i = 0; i < times; i++ ){
+//            initializeWeights();
+//            train();
+//            epo += this.epoch;
+//            System.out.println(this.epoch);
+//        }
+//        double average = epo / times;
+//        System.out.println("average epoch:" + average );
+//    }
 }
