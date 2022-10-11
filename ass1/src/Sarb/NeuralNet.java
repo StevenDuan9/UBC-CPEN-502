@@ -21,10 +21,17 @@ public class NeuralNet implements NeuralNetInterface {
     private double[][] hiddenWeightDelta;
     private double[] outputErrorSignal;
     private double[] hiddenErrorSignal;
+<<<<<<< HEAD
     private double learningRate;
     private double momentum;
     private double acceptedError;
     private double totalError = 0.0;
+=======
+    private double learningRate = 0.2D;
+    private double momentum = 0.0D;
+    private double acceptedError = 0.05D;
+    private double totalError = 0.0D;
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
     private double[] singleError;
     private int epoch = 0;
 
@@ -52,7 +59,7 @@ public class NeuralNet implements NeuralNetInterface {
     }
 
     public void initializeSet() {
-        if (this.binary = true) {
+        if (this.binary == true) {
             this.trainInput = new double[][]{{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
             this.trainOutput = new double[][]{{0.0}, {1.0}, {1.0}, {0.0}};
         } else {
@@ -73,6 +80,22 @@ public class NeuralNet implements NeuralNetInterface {
                 hiddenWeight[i][j] = Math.random() - 0.5D;
             }
         }
+    }
+    public void initializeWeights1() {
+        int i;
+        int j;
+        for(i = 0; i < this.inputNumber+ 1; ++i) {
+            for(j = 0; j < this.hiddenNumber; ++j) {
+                this.inputWeight[i][j] = 0.2D;
+            }
+        }
+
+        for(i = 0; i < this.hiddenNumber + 1; ++i) {
+            for(j = 0; j < this.outputNumber; ++j) {
+                this.hiddenWeight[i][j] = 0.2D;
+            }
+        }
+
     }
 
 
@@ -102,9 +125,17 @@ public class NeuralNet implements NeuralNetInterface {
             this.hiddenNode[i] = binary ? sigmoid(hiddenNode[i]) : customSigmoid(hiddenNode[i]);
         }
         //hiddenNode[hiddenNumber] = 1.0;
+<<<<<<< HEAD
         for (int i = 0; i < this.outputNumber; i++) {
             for (int j = 0; j < this.hiddenNumber + 1; j++) {
                 this.outputNode[i] += this.hiddenNode[j] * this.hiddenWeight[j][i];
+=======
+        for (int i = 0; i < outputNumber; i++) {
+            for (int j = 0; j < hiddenNumber + 1; j++) {
+
+                outputNode[i] += hiddenNode[j] * hiddenWeight[j][i];
+
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
             }
             outputNode[i] = binary ? sigmoid(outputNode[i]) : customSigmoid(outputNode[i]);
         }
@@ -115,12 +146,19 @@ public class NeuralNet implements NeuralNetInterface {
     }
 
     public void getTotalError(int trainInputOrder) {
+<<<<<<< HEAD
         for (int i = 0; i < this.outputNumber; i++) {
             this.singleError[i] = this.trainOutput[trainInputOrder][i] - this.outputNode[i];
             //this.totalError += (this.singleError[i] * this.singleError[i]) / 2.0;
             double temp = Math.pow(this.singleError[i], 2.0);
             this.totalError += temp / 2.0;
            // System.out.println(this.totalError);
+=======
+        for (int i = 0; i < outputNumber; i++) {
+            singleError[i] = trainOutput[trainInputOrder][i] - outputNode[i];
+            //totalError += singleError[i] * singleError[i] ;
+            this.totalError += Math.pow(this.singleError[i], 2.0D);
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
         }
         //this.totalError =  this.totalError / 2.0;
         //System.out.println(this.totalError);
@@ -134,6 +172,7 @@ public class NeuralNet implements NeuralNetInterface {
         //compute the error for the output units
         for (int i = 0; i < outputNumber; i++) {
             //outputErrorSignal[i] = 0;
+<<<<<<< HEAD
             this.outputErrorSignal[i] = binary ? this.outputNode[i] * (1.0 - this.outputNode[i]) * (this.trainOutput[setRowOrder][i] - outputNode[i]) : 0.5D * (1.0D - outputNode[i] * outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]);
         }
         //update the weight of the hidden units
@@ -148,34 +187,69 @@ public class NeuralNet implements NeuralNetInterface {
             this.hiddenErrorSignal[i] = 0;
             for (int j = 0; j < this.outputNumber; j++) {
                 this.hiddenErrorSignal[i] += this.outputErrorSignal[j] * this.hiddenWeight[i][j];
+=======
+            outputErrorSignal[i] = binary ? outputNode[i] * (1.0D - outputNode[i]) * (trainOutput[setRowOrder][i] - outputNode[i]) : 0.5D * (1.0D - Math.pow(outputNode[i], 2.0D)) * (trainOutput[setRowOrder][i] - outputNode[i]);
+        }
+        //update the weight of the hidden units
+        for (int i = 0; i < outputNumber; i++) {
+
+            for (int j = 0; j < hiddenNumber + 1; j++) {
+                hiddenWeightDelta[j][i] = momentum * hiddenWeightDelta[j][i] + learningRate * outputErrorSignal[i] * hiddenNode[j];
+                hiddenWeight[j][i] += hiddenWeightDelta[j][i];
+            }
+        }
+        //compute the error for the hidden units
+
+        for (int i = 0; i < hiddenNumber +1 ; i++) {
+            hiddenErrorSignal[i] = 0;
+
+            for (int j = 0; j < outputNumber; j++) {
+                hiddenErrorSignal[i] += outputErrorSignal[j] * hiddenWeight[i][j];
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
             }
             this.hiddenErrorSignal[i] *= binary ? this.hiddenNode[i] * (1.0 - this.hiddenNode[i]) : 0.5D * (1.0D - hiddenNode[i] * hiddenNode[i]);
         }
         //update the weight of the input units
+<<<<<<< HEAD
         for (int i = 0; i < hiddenNumber; i++) {
+=======
+
+        for (int i = 0; i < hiddenNumber; i++) {
+
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
             for (int j = 0; j < inputNumber+1; j++) {
                 this.inputWeightDelta[j][i] = this.momentum * this.inputWeightDelta[j][i] + this.learningRate * this.hiddenErrorSignal[i] * this.inputNode[j];
                 inputWeight[j][i] += inputWeightDelta[j][i];
                 //System.out.println(inputWeight[j][i]);
             }
         }
+
     }
 
 
     public void train() {
+<<<<<<< HEAD
         this.epoch = 0;
         /* do{
+=======
+        epoch = 0;
+
+        //do{
+
+         do{
+
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
             totalError = 0.0;
             for(int i = 0; i < trainInput.length; i++){
                 forwardPropagation(i);
                 getTotalError(i);
-                System.out.println(totalError);
+                //System.out.println(totalError);
                 backPropagation(i);
             }
-            System.out.println("epoch:" + epoch + "total error+" + totalError);
+            System.out.println("epoch:" + epoch + " " + "total error+" + totalError);
             epoch++;
-        }while(totalError > acceptedError); */
 
+<<<<<<< HEAD
         for (int j = 0; j < 2500; j++) {
             this.totalError = 0.0;
             for (int i = 0; i < trainInput.length; i++) { //this.trainInput = new double[][]{{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
@@ -189,6 +263,23 @@ public class NeuralNet implements NeuralNetInterface {
             epoch++;
             System.out.println("epoch: " + epoch + ", total error: " + this.totalError);
         }
+=======
+        }while(totalError > acceptedError);
+
+
+//        for (int j = 0; j < 5000; j++) {
+//            totalError = 0.0;
+//            for (int i = 0; i < trainInput.length; i++) {
+//                forwardPropagation(i);
+//                getTotalError(i);
+//                //System.out.println("epoch: " + epoch + ", total error: " + totalError);
+//                backPropagation(i);
+//            }
+//            epoch++;
+//            System.out.println("epoch: " + epoch + ", total error: " + totalError);
+//        }
+
+>>>>>>> 66594f497f55e10888b8b65c32919e959e98d90c
     }
 
 
