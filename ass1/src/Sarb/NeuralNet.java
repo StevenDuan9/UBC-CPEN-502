@@ -211,6 +211,7 @@ public class NeuralNet implements NeuralNetInterface {
                 //System.out.println(totalError);
                 backPropagation(i);
             }
+            totalError /= 2;
             //System.out.println("epoch:" + this.epoch + " " + "total error " + totalError);
             if(!runOnlyOnce){
                 ls1.add(Integer.toString(this.epoch));
@@ -260,7 +261,7 @@ public class NeuralNet implements NeuralNetInterface {
 
     public void writeToCSV() throws Exception {
 
-        try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("data.csv"), StandardCharsets.ISO_8859_1))){
+        try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("data.csv", false), StandardCharsets.ISO_8859_1))){
             for(int i=0; i < this.ls1.size(); i++) {
                 writer.write(this.ls1.get(i));
                 writer.write("," + ls2.get(i) + System.lineSeparator());
